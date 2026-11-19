@@ -136,5 +136,7 @@ glassbox auth-debug --rpc-url https://soroban-testnet.stellar.org --network test
 
 ## See Also
 
-- [`glassbox debug`](./debug-command.md) — full transaction execution trace
-- [`glassbox doctor`](./sandboxed-replay.md) — environment setup checker
+- [`glassbox debug`](./debug-command.md) — full transaction execution trace and all debug flags
+- [`glassbox session` subcommand reference](./session-reference.md) — save, resume, and manage auth-debug sessions
+- [Troubleshooting Index — Signing symptoms](./troubleshooting-index.md#signing-symptoms) — HSM and signing error routing
+- [Navigation map](./navigation-map.md) — goal-oriented journey index

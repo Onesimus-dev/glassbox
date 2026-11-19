@@ -129,7 +129,9 @@ on `error.code` in the JSON envelope (see
 
 ## See also
 
+- [Navigation map](./navigation-map.md) — goal-oriented journey index for all major workflows
 - [Debug command](./debug-command.md) — complete `glassbox debug` reference
+- [Session subcommand reference](./session-reference.md) — all `glassbox session` subcommands in one place
 - [Operator runbook](./operator-runbook.md) — symptom-based RPC/simulator/session remediation
 - [Source mapping troubleshooting](./source-mapping-troubleshooting.md) — source-mapping wizard
 - [Audit signing](./audit-signing.md) — software and PKCS#11 HSM signing

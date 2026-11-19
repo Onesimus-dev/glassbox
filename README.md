@@ -373,6 +373,8 @@ glassbox version --json
 
 ## Documentation
 
+- **[Navigation Map](docs/navigation-map.md)**: Goal-oriented journey index — find the right document for debugging, session management, signing, automation, observability, and security review without searching every guide.
+- **[Session Subcommand Reference](docs/session-reference.md)**: Single-page reference for every `glassbox session` subcommand: flags, examples, exit codes, and conflict policies.
 - **[Troubleshooting Index](docs/troubleshooting-index.md)**: Symptom-oriented index that routes common setup, RPC, source-map, session, and signing symptoms to the right existing troubleshooting page without duplicating procedures.
 - **[Observability Troubleshooting](docs/observability-troubleshooting.md)**: Practical guide to logs, Prometheus metrics, OpenTelemetry traces, telemetry events, correlation IDs, and collection failure diagnosis.
 - **[Source Mapping](docs/source-mapping.md)**: Implementation details for mapping WASM failures to Rust source code.

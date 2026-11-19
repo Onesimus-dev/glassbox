@@ -824,11 +824,44 @@ Pins an RPC endpoint URL with the saved session so that when the session is resu
 
 ---
 
+## Authorization Debugging
+
+After a `glassbox debug` run you may want to analyze which signatures or
+thresholds caused an authorization failure. That analysis is a separate command:
+
+```sh
+glassbox auth-debug <transaction-hash>
+
+# Detailed report with summary metrics and missing signers
+glassbox auth-debug --detailed <transaction-hash>
+
+# Machine-readable JSON (--detailed has no effect; JSON always contains full detail)
+glassbox auth-debug --json <transaction-hash>
+
+# Force a specific network when auto-detection is unreliable
+glassbox auth-debug --network testnet <transaction-hash>
+```
+
+`auth-debug` validates all inputs before making any network call: the
+transaction hash must be exactly 64 hex characters, `--rpc-url` must use
+`http`/`https`, and `--network` must be `testnet`, `mainnet`, or `futurenet`.
+When no Soroban authorization entries are found in the transaction a warning is
+written to **stderr** explaining that the `SUCCEEDED` status means only "no
+failures recorded", not a verified pass.
+
+Full reference: [auth-debug-command.md](./auth-debug-command.md).
+
+---
+
+## See also
+
+- [`glassbox auth-debug`](./auth-debug-command.md) — multi-signature and threshold authorization tracing
+- [`glassbox session` subcommand reference](./session-reference.md) — all session subcommands in one place
 - [`glassbox profile`](./trace-profiling.md) — gas usage analysis, pprof flamegraph generation, and profiling export
 - [`glassbox doctor`](./sandboxed-replay.md) — environment setup checker
-- [`glassbox session`](./session-bookmarking.md) — save and restore debug sessions
 - [Trace export validation](./trace-export-validation.md) — validation checks for `--trace-output`
 - [Snapshot deduplication](./snapshot-deduplication.md)
 - [Source mapping](./source-mapping.md)
 - [Audit signing](./audit-signing.md)
+- [Navigation map](./navigation-map.md) — goal-oriented journey index
 - [Command Security Review Guide](./command-security-review.md) — checklist and worked examples for secrets, paths, network, subprocesses, and output redaction required for every new command

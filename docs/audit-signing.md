@@ -4,7 +4,58 @@ Glassbox can sign audit logs with either a software Ed25519 key or a PKCS#11
 hardware security module (HSM). This document covers setup, environment
 variables, platform-specific module paths, and troubleshooting.
 
-## Quick start
+## Signing provider flag reference
+
+The flag that selects the signing backend is `--signing-provider`. It has one deprecated alias.
+
+| Flag | Status | Values | Notes |
+|------|--------|--------|-------|
+| `--signing-provider` | **stable** (since 0.3) | `software`, `pkcs11` | Use this flag in all new scripts |
+| `--hsm-provider` | **deprecated** (since 0.3, removes in v2.0) | same values | Alias; accepted today but prints a warning |
+
+The environment variable mirror is `GLASSBOX_SIGNING_PROVIDER` (stable). Its deprecated counterpart is `GLASSBOX_SIGNER_TYPE`.
+
+### Successful path — software provider
+
+```bash
+glassbox audit:sign \
+  --signing-provider software \
+  --payload '{"input":{},"state":{},"events":[],"timestamp":"2026-01-01T00:00:00.000Z"}' \
+  --software-private-key "$(cat ./ed25519-private-key.pem)"
+# Expected: signed audit log JSON printed to stdout, exit 0
+```
+
+### Successful path — PKCS#11 provider
+
+```bash
+export GLASSBOX_PKCS11_MODULE=/usr/lib/softhsm/libsofthsm2.so
+export GLASSBOX_PKCS11_PIN=1234
+export GLASSBOX_PKCS11_KEY_LABEL=glassbox-audit-key
+
+glassbox audit:sign \
+  --signing-provider pkcs11 \
+  --payload '{"input":{},"state":{},"events":[],"timestamp":"2026-01-01T00:00:00.000Z"}'
+# Expected: signed audit log JSON printed to stdout, exit 0
+```
+
+### Failure path — deprecated flag warning
+
+```bash
+glassbox audit:sign --hsm-provider pkcs11 --validate-only \
+  --pkcs11-module /usr/lib/softhsm/libsofthsm2.so --pkcs11-pin 1234
+# stderr: warning: --hsm-provider is deprecated; use --signing-provider pkcs11 instead
+# The command still runs; use --signing-provider in new scripts.
+```
+
+### Failure path — unknown provider value
+
+```bash
+glassbox audit:sign --signing-provider kms --payload-file payload.json
+# Error: invalid --signing-provider "kms" — must be one of: software, pkcs11
+# Exit: 1 (VALIDATION_FAILED)
+```
+
+---
 
 ```bash
 # Software signing (Ed25519 PEM key)
@@ -94,6 +145,11 @@ GLASSBOX_SOFTWARE_PRIVATE_KEY_HEX is not valid hexadecimal: ...
 ---
 
 ## PKCS#11 HSM signing
+
+> **Flag name:** Use `--signing-provider pkcs11`.
+> The flag `--hsm-provider` is **deprecated** since v0.3 and will be removed in v2.0.
+> Both flags are accepted today, but examples throughout this document use the current name.
+> See the [compatibility matrix](./compatibility-matrix.md#currently-deprecated-surfaces) for the removal timeline.
 
 ### Required environment variables
 
@@ -388,7 +444,8 @@ pkcs11-tool --module /usr/lib/softhsm/libsofthsm2.so \
 export GLASSBOX_PKCS11_MODULE=/usr/lib/softhsm/libsofthsm2.so
 export GLASSBOX_PKCS11_PIN=1234
 export GLASSBOX_PKCS11_KEY_LABEL=glassbox-audit-key
-glassbox audit:sign --hsm-provider pkcs11 --validate-only
+glassbox audit:sign --signing-provider pkcs11 --validate-only
+# Note: --hsm-provider is a deprecated alias for --signing-provider. Use --signing-provider.
 ```
 
 ---
@@ -414,7 +471,8 @@ export GLASSBOX_PKCS11_PIN=<your-pin>
 export GLASSBOX_PKCS11_KEY_LABEL="Private key for Digital Signature"
 
 # 5. Validate
-glassbox audit:sign --hsm-provider pkcs11 --validate-only
+glassbox audit:sign --signing-provider pkcs11 --validate-only
+# Note: --hsm-provider is a deprecated alias for --signing-provider. Use --signing-provider.
 ```
 
 ---
@@ -429,7 +487,7 @@ below is what a backend that can drive the module produces when every step
 passes.
 
 ```
-$ glassbox audit:sign --hsm-provider pkcs11 --validate-only
+$ glassbox audit:sign --signing-provider pkcs11 --validate-only
 
 Running PKCS#11 preflight checks...
 
@@ -712,3 +770,12 @@ The following ADRs govern the design decisions behind audit signing:
 - [ADR-006: Provider Isolation](adr/006-provider-isolation.md) — documents the isolation properties of software, PKCS#11, and KMS providers; explains why only the hash digest crosses the provider boundary.
 - [ADR-005: Canonicalization Ownership](adr/005-canonicalization-ownership.md) — specifies the canonical form and hashing algorithm whose output is passed to the signing provider.
 - [ADR-007: Offline Guarantees](adr/007-offline-guarantees.md) — documents which providers work without network access and describes the air-gapped signing pipeline.
+
+---
+
+## See also
+
+- [Compatibility Matrix — CLI flags](./compatibility-matrix.md#1-cli-flags) — `--signing-provider` (stable) and `--hsm-provider` (deprecated) stability levels and removal timeline
+- [Audit Verify Command](./audit-verify-command.md) — verifying a signed log
+- [Audit KMS Signing](./audit-kms-signing.md) — AWS KMS signing integration
+- [Navigation map — Journey 3](./navigation-map.md#journey-3--sign-and-verify-an-audit-log) — full signing workflow overview

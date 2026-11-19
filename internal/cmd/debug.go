@@ -231,33 +231,63 @@ through the local simulator, and displays detailed execution traces including:
   - Token flows (XLM and Soroban assets)
   - Execution metadata and state changes
 
-The simulation results are stored in a session that can be saved for later analysis.
+The simulation results are stored in a session that can be saved for later analysis
+with 'glassbox session save'.
 
-Local WASM Replay Mode:
-  Use --wasm flag to test contracts locally without network data.`,
-	Example: `  # Debug a transaction on mainnet
-  Glassbox debug 5c0a1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab
+Network selection:
+  --network defaults to mainnet and is auto-detected from the transaction when
+  omitted. Accepted values: testnet, mainnet, futurenet.
+
+Input modes (mutually exclusive — omit for network hash mode):
+  --wasm <path>            Local WASM replay; no network required
+  --xdr-file <path>        Load a raw base64 XDR envelope from disk
+  --json-file <path>       Load a structured JSON envelope from disk
+  --load-snapshots <path>  Offline replay from a saved snapshot registry
+  --demo                   Print sample output; no network or WASM needed
+
+Validation:
+  All flag combinations are validated before any network call. Invalid
+  combinations, bad hash formats, missing files, and unrecognised network
+  names are rejected immediately with an actionable message.
+
+Authorization tracing:
+  To analyze multi-sig / threshold failures on a transaction use:
+    glassbox auth-debug <transaction-hash>
+
+For the full flag reference see docs/debug-command.md.`,
+	Example: `  # Debug a transaction on mainnet (default)
+  glassbox debug 5c0a1234567890abcdef1234567890abcdef1234567890abcdef1234567890ab
 
   # Debug on testnet
-  Glassbox debug --network testnet abc123...def789
+  glassbox debug --network testnet abc123...def789
 
-  # Debug and compare results between networks
-  Glassbox debug --network mainnet --compare-network testnet abc123...def789
+  # Validate inputs and environment without running a simulation
+  glassbox debug --dry-run --network testnet abc123...def789
+
+  # Compare execution between testnet and mainnet
+  glassbox debug --network testnet --compare-network mainnet <tx-hash>
 
   # Debug and save the session
-  Glassbox debug abc123...def789 && Glassbox session save
-
-  # Compare execution across networks
-  Glassbox debug --network testnet --compare-network mainnet <tx-hash>
+  glassbox debug abc123...def789
+  glassbox session save --name payroll-bug
 
   # Local WASM replay (no network required)
-  Glassbox debug --wasm ./contract.wasm --args "arg1" --args "arg2"
+  glassbox debug --wasm ./contract.wasm --args "arg1" --args "arg2"
+
+  # Load from a local XDR envelope file (no network required)
+  glassbox debug --xdr-file ./envelope.xdr
+
+  # Offline replay from a saved snapshot registry
+  glassbox debug --load-snapshots ./registry.json
+
+  # Machine-readable JSON output
+  glassbox debug --json <tx-hash>
 
   # Demo mode (test color output, no network required)
-  Glassbox debug --demo
+  glassbox debug --demo
 
-  # Validate parameters without running a replay
-  Glassbox debug --dry-run --network testnet <tx-hash>`,
+  # Analyze authorization failures for the same transaction
+  glassbox auth-debug <tx-hash>`,
 	Args: cobra.MaximumNArgs(1),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if hotReloadFlag && wasmPath == "" {
